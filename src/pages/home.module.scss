@@ -1,5 +1,4 @@
 .container {
-  width: 720px;
   margin: 0 auto;
 
   button {
@@ -18,13 +17,12 @@
     font-size: 1.86rem;
     font-weight: 700;
     color: var(--heading);
-
-    margin-bottom: 0.53rem;
   }
 
   p {
     font-size: 1.2rem;
     color: var(--body);
+    margin-top: 0.53rem;
   }
 
   & + .post {

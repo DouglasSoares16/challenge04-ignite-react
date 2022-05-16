@@ -1,7 +1,9 @@
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import Link from 'next/link';
-
 import { GetStaticProps } from 'next';
+
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 
 import { getPrismicClient } from '../services/prismic';
 
@@ -27,89 +29,74 @@ interface HomeProps {
   postsPagination: PostPagination;
 }
 
-export default function Home(): JSX.Element {
+export default function Home({ postsPagination }: HomeProps): JSX.Element {
   return (
-    <main className={styles.container}>
-      <Link href="#">
-        <a className={styles.post}>
-          <strong>Como utilizar Hooks</strong>
-          <p>Pensando em sincronização em vez de ciclos de vida.</p>
-          <div className={styles.postInfo}>
-            <div>
-              <FiCalendar fontSize={20} />
-              <span>15 Mar 2022</span>
-            </div>
+    <main className={`${styles.container} ${commonStyles.containerWidth}`}>
+      {postsPagination.results.map(post => {
+        return (
+          <Link key={post.uid} href={`/post/${post.uid}`}>
+            <a className={styles.post}>
+              <strong>{post.data.title}</strong>
+              <p>{post.data.subtitle}</p>
+              <div className={styles.postInfo}>
+                <div>
+                  <FiCalendar fontSize={20} />
+                  <span>{post.first_publication_date}</span>
+                </div>
 
-            <div>
-              <FiUser fontSize={20} />
-              <span>Joseph Oliveira</span>
-            </div>
-          </div>
-        </a>
-      </Link>
-
-      <Link href="#">
-        <a className={styles.post}>
-          <strong>Como utilizar Hooks</strong>
-          <p>Pensando em sincronização em vez de ciclos de vida.</p>
-          <div className={styles.postInfo}>
-            <div>
-              <FiCalendar fontSize={20} />
-              <span>15 Mar 2022</span>
-            </div>
-
-            <div>
-              <FiUser fontSize={20} />
-              <span>Joseph Oliveira</span>
-            </div>
-          </div>
-        </a>
-      </Link>
-
-      <Link href="#">
-        <a className={styles.post}>
-          <strong>Como utilizar Hooks</strong>
-          <p>Pensando em sincronização em vez de ciclos de vida.</p>
-          <div className={styles.postInfo}>
-            <div>
-              <FiCalendar fontSize={20} />
-              <span>15 Mar 2022</span>
-            </div>
-
-            <div>
-              <FiUser fontSize={20} />
-              <span>Joseph Oliveira</span>
-            </div>
-          </div>
-        </a>
-      </Link>
-
-      <Link href="#">
-        <a className={styles.post}>
-          <strong>Como utilizar Hooks</strong>
-          <p>Pensando em sincronização em vez de ciclos de vida.</p>
-          <div className={styles.postInfo}>
-            <div>
-              <FiCalendar fontSize={20} />
-              <span>15 Mar 2022</span>
-            </div>
-
-            <div>
-              <FiUser fontSize={20} />
-              <span>Joseph Oliveira</span>
-            </div>
-          </div>
-        </a>
-      </Link>
+                <div>
+                  <FiUser fontSize={20} />
+                  <span>{post.data.author}</span>
+                </div>
+              </div>
+            </a>
+          </Link>
+        );
+      })}
 
       <button type="button">Carregar mais posts</button>
     </main>
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient({});
-//   // const postsResponse = await prismic.getByType(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient({});
+  const response = await prismic.getByType('publication', {
+    fetch: [
+      'publication.title',
+      'publication.subtitle',
+      'publication.author',
+      'publication.content',
+    ],
+    pageSize: 4,
+  });
 
-//   // TODO
-// };
+  const posts = response.results.map((post): Post => {
+    return {
+      uid: post.uid,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd LLL yyyy',
+        {
+          locale: ptBR,
+        }
+      ),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
+  });
+
+  const postsPagination = {
+    next_page: response.next_page,
+    results: posts,
+  };
+
+  return {
+    props: {
+      postsPagination,
+    },
+  };
+};
