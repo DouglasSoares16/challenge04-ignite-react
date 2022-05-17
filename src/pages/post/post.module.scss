@@ -1,1 +1,34 @@
-// TODO
+.banner {
+  width: 100%;
+  height: 26.6rem;
+
+  img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.postContainer {
+  h1 {
+    font: {
+      weight: 700;
+      size: 3.2rem;
+    }
+    color: var(--heading);
+    margin-top: 5.33rem;
+  }
+}
+
+.postContent {
+  div {
+    h2 {
+      font: {
+        weight: 700;
+        size: 1.86rem;
+      }
+      color: var(--heading);
+      margin: 2.80rem 0;
+    }
+  }
+}
