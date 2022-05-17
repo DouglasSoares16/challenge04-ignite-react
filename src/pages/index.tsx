@@ -5,6 +5,7 @@ import { GetStaticProps } from 'next';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
+import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
 
 import commonStyles from '../styles/common.module.scss';
@@ -30,9 +31,23 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const [posts, setPosts] = useState<Post[]>(postsPagination.results);
+  const [nextPage, setNextPage] = useState<string | null>(
+    postsPagination.next_page
+  );
+
+  async function handleGetNextPage(): Promise<void> {
+    const results = await fetch(`/api/next-posts?next_page=${nextPage}`);
+
+    const data = await results.json();
+
+    setNextPage(data.next_page);
+    setPosts(data.results);
+  }
+
   return (
     <main className={`${styles.container} ${commonStyles.containerWidth}`}>
-      {postsPagination.results.map(post => {
+      {posts.map(post => {
         return (
           <Link key={post.uid} href={`/post/${post.uid}`}>
             <a className={styles.post}>
@@ -54,7 +69,11 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
         );
       })}
 
-      <button type="button">Carregar mais posts</button>
+      {nextPage && (
+        <button onClick={handleGetNextPage} type="button">
+          Carregar mais posts
+        </button>
+      )}
     </main>
   );
 }
@@ -68,7 +87,7 @@ export const getStaticProps: GetStaticProps = async () => {
       'publication.author',
       'publication.content',
     ],
-    pageSize: 4,
+    pageSize: 1,
   });
 
   const posts = response.results.map((post): Post => {
