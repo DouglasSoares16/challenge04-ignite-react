@@ -29,24 +29,3 @@
     margin-top: 3.2rem;
   }
 }
-
-.postInfo {
-  display: flex;
-  align-items: center;
-  margin-top: 1.6rem;
-
-  div {
-    display: flex;
-    align-items: center;
-
-    & + div {
-      margin-left: 1.6rem;
-    }
-
-    span {
-      font-size: 0.93rem;
-      color: var(--info);
-      margin-left: 0.53rem;
-    }
-  }
-}
