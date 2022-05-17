@@ -2,7 +2,7 @@ import { FiCalendar, FiUser } from 'react-icons/fi';
 import Link from 'next/link';
 import { GetStaticProps } from 'next';
 
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 import { useState } from 'react';
@@ -37,12 +37,24 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
   );
 
   async function handleGetNextPage(): Promise<void> {
-    const results = await fetch(`/api/next-posts?next_page=${nextPage}`);
+    const result = await fetch(`${nextPage}`);
 
-    const data = await results.json();
+    const data = await result.json();
+
+    const newPosts = data.results.map((post): Post => {
+      return {
+        uid: post.uid,
+        first_publication_date: post.first_publication_date,
+        data: {
+          title: post.data.title,
+          subtitle: post.data.subtitle,
+          author: post.data.author,
+        },
+      };
+    });
 
     setNextPage(data.next_page);
-    setPosts(data.results);
+    setPosts([...posts, ...newPosts]);
   }
 
   return (
@@ -56,7 +68,15 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
               <div className={commonStyles.postInfo}>
                 <div>
                   <FiCalendar fontSize={20} />
-                  <span>{post.first_publication_date}</span>
+                  <span>
+                    {format(
+                      parseISO(post.first_publication_date),
+                      'dd MMM yyyy',
+                      {
+                        locale: ptBR,
+                      }
+                    ).toString()}
+                  </span>
                 </div>
 
                 <div>
@@ -93,13 +113,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const posts = response.results.map((post): Post => {
     return {
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd LLL yyyy',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,
